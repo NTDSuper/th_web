@@ -1,0 +1,36 @@
+.topbar-appBar {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%) !important;
+  box-shadow: 0 4px 20px rgba(26, 35, 126, 0.35) !important;
+}
+
+.topbar-toolbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 0 24px !important;
+}
+
+.topbar-name {
+  font-weight: 700 !important;
+  letter-spacing: 0.3px !important;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.topbar-checkbox-container {
+  margin: 0 !important;
+}
+
+.topbar-checkbox-label {
+  opacity: 0.9;
+  font-size: 0.82rem !important;
+}
+
+.topbar-context {
+  font-weight: 500 !important;
+  opacity: 0.95;
+  font-size: 1rem !important;
+}

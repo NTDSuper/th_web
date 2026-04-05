@@ -1,0 +1,32 @@
+.userlist-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.userlist-header {
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(90deg, rgba(57, 73, 171, 0.05) 0%, transparent 100%);
+}
+
+.userlist-header-text {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.2px !important;
+  color: #777 !important;
+}
+
+.userlist-item {
+  padding: 10px 16px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.userlist-item:hover {
+  background-color: rgba(57, 73, 171, 0.06) !important;
+}
+
+.userlist-item--active {
+  background-color: rgba(57, 73, 171, 0.1) !important;
+  border-right: 3px solid #3949ab !important;
+}
