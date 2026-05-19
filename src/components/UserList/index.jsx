@@ -31,7 +31,6 @@ function getInitials(user) {
 function UserList() {
   const [users, setUsers] = useState([]);
   const location = useLocation();
-
   useEffect(() => {
     fetchModel("/user/list").then((data) => {
       if (data) setUsers(data);

@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Typography, Button, Divider } from "@mui/material";
+import axios from "axios";
 import fetchModel from "../../lib/fetchModelData";
 import { AdvancedFeaturesContext } from "../../App";
 import "./styles.css";
+
+const API_BASE = "https://tf5pw3-8081.csb.app/api/photo";
 
 /**
  * Format a date string into a human-friendly string.
@@ -27,16 +30,53 @@ function getImageSrc(fileName) {
     /* eslint-disable-next-line import/no-dynamic-require */
     return require(`../../images/${fileName}`);
   } catch (e) {
-    return null;
+    // Fallback to the server's images directory for newly uploaded photos
+    return `https://tf5pw3-8081.csb.app/images/${fileName}`;
   }
 }
 
 /**
  * PhotoCard – renders a single photo with its date and comments.
  */
-function PhotoCard({ photo }) {
+function PhotoCard({ photo, onAddComment }) {
   const imgSrc = getImageSrc(photo.file_name);
   const comments = photo.comments || [];
+
+  const [commentText, setCommentText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmitComment = () => {
+    const trimmed = commentText.trim();
+    if (!trimmed) {
+      setError("Comment cannot be empty.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+
+    axios
+      .post(
+        `${API_BASE}/commentsOfPhoto/${photo._id}`,
+        { comment: trimmed },
+        { withCredentials: true }
+      )
+      .then(() => {
+        setCommentText("");
+        if (onAddComment) onAddComment();
+      })
+      .catch((err) => {
+        const msg =
+          err.response && err.response.data
+            ? err.response.data
+            : "Failed to add comment.";
+        setError(msg);
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  };
 
   return (
     <div className="photo-card" id={`photo-${photo._id}`}>
@@ -54,7 +94,7 @@ function PhotoCard({ photo }) {
 
       <div className="photo-meta">
         <Typography variant="caption" className="photo-date">
-          📅 {formatDate(photo.date_time)}
+          {formatDate(photo.date_time)}
         </Typography>
       </div>
 
@@ -91,6 +131,44 @@ function PhotoCard({ photo }) {
           </Typography>
         </div>
       )}
+
+      {/* ── Add Comment Form ──────────────────────────────── */}
+      <div className="add-comment-section">
+        <Typography variant="subtitle2" className="add-comment-title">
+          Add a Comment
+        </Typography>
+        <div className="add-comment-form">
+          <textarea
+            className="add-comment-input"
+            placeholder="Write a comment..."
+            value={commentText}
+            onChange={(e) => {
+              setCommentText(e.target.value);
+              if (error) setError("");
+            }}
+            rows={2}
+            id={`add-comment-input-${photo._id}`}
+          />
+          {error && (
+            <Typography
+              variant="caption"
+              className="add-comment-error"
+            >
+              {error}
+            </Typography>
+          )}
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleSubmitComment}
+            disabled={submitting}
+            className="add-comment-btn"
+            id={`add-comment-btn-${photo._id}`}
+          >
+            {submitting ? "Posting..." : "Post Comment"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -105,16 +183,21 @@ function UserPhotos() {
   const { advanced } = useContext(AdvancedFeaturesContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchModel(`/photosOfUser/${userId}`).then((data) => {
+  const loadPhotos = () => {
+    fetchModel(`/photo/${userId}`).then((data) => {
       if (data) setPhotos(data);
     });
+  };
+
+  useEffect(() => {
+    loadPhotos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   if (photos.length === 0) {
     return (
       <div className="userphotos-loading">
-        <Typography color="text.secondary">Loading photos...</Typography>
+        <Typography color="text.secondary">The user hasn't uploaded any photos yet.</Typography>
       </div>
     );
   }
@@ -136,7 +219,7 @@ function UserPhotos() {
           </Typography>
         </div>
 
-        <PhotoCard photo={photo} />
+        <PhotoCard photo={photo} onAddComment={loadPhotos} />
 
         <div className="stepper-controls">
           <Button
@@ -180,7 +263,7 @@ function UserPhotos() {
   return (
     <div className="userphotos-container">
       {photos.map((photo) => (
-        <PhotoCard key={photo._id} photo={photo} />
+        <PhotoCard key={photo._id} photo={photo} onAddComment={loadPhotos} />
       ))}
     </div>
   );
